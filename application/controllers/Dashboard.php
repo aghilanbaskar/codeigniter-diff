@@ -42,10 +42,7 @@ class Dashboard extends CI_Controller {
             $changed_files[] = $this->getFileDiff($file, $dir1, $dir2);
         }
         $result  = array ('added' => $added_files , 'deleted' => $deleted_files, 'changed' =>$changed_files );
-        // echo json_encode($result);
-        echo '<pre>';
-        print_r($result);
-        echo '</pre>';
+        echo json_encode($result);
     }
 
     private function getfolderTreeView($dir) {
@@ -83,11 +80,6 @@ class Dashboard extends CI_Controller {
         $file_v2 = file($dir2.'/'.$file, FILE_IGNORE_NEW_LINES);
         $addedDiff = array_diff($file_v2,$file_v1);
         $deletedDiff = array_diff($file_v1,$file_v2);
-        echo '<pre>';
-        print_r($addedDiff);
-        print_r($deletedDiff);
-        echo '</pre>';
-        die();
-        // return array('file' => $file, 'added' => $addedDiff, 'deleted' => $deletedDiff);
+        return array('file' => $file, 'added' => $addedDiff, 'deleted' => $deletedDiff);
     }
 }
