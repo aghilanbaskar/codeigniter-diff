@@ -10,7 +10,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script type='text/javascript'>const baseURL= "<?php echo base_url();?>";</script>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://ajax.googleapis.com 'nonce-<?= $this->config->item('scriptNonce');?>';">
+  <script type='text/javascript' nonce='<?= $this->config->item('scriptNonce');?>'>const baseURL= "<?php echo base_url();?>";</script>
   <style>
   .fa-plus{
     color: green;
@@ -20,6 +21,11 @@
   }
   .fa-edit{
     color: #B58503;
+  }
+  .table {
+    display:block;
+    height: 500px !important;
+    overflow-y : scroll;
   }
   </style>
 </head>
@@ -90,6 +96,8 @@
       <ul class="list-group">
       </ul>
     </div>
+  </div>
+  <div id="diff-files" class="row mt-3 text-break">
   </div>
 </div>
 

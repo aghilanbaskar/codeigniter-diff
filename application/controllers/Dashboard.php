@@ -38,8 +38,11 @@ class Dashboard extends CI_Controller {
         $fileswithdiff = $this->getFilesWithDifference($files, $dir1, $dir2);
 
         $changed_files =  array();
-        foreach ($fileswithdiff as $file) {
+        foreach ($fileswithdiff as $i => $file) {
             $changed_files[] = $this->getFileDiff($file, $dir1, $dir2);
+            // if($i >0){
+            //     break;
+            // }
         }
         $result  = array ('added' => $added_files , 'deleted' => $deleted_files, 'changed' =>$changed_files );
         echo json_encode($result);
@@ -80,6 +83,25 @@ class Dashboard extends CI_Controller {
         $file_v2 = file($dir2.'/'.$file, FILE_IGNORE_NEW_LINES);
         $addedDiff = array_diff($file_v2,$file_v1);
         $deletedDiff = array_diff($file_v1,$file_v2);
-        return array('file' => $file, 'added' => $addedDiff, 'deleted' => $deletedDiff);
+        $addedLineNo = array_keys($addedDiff);
+        $deletedLineNo = array_keys($deletedDiff);
+
+        $v1 = '';
+        $v2 = '';
+        foreach ($file_v1 as $i => $line) {
+          if(in_array($i, $deletedLineNo)){
+            $v1.= '<tr class="table-danger"><td>'.htmlspecialchars($line).'</td></tr>';
+          }else {
+            $v1.= '<tr class="table-light"><td>'.htmlspecialchars($line).'</td></tr>';
+          }
+        }
+        foreach ($file_v2 as $i => $line) {
+          if(in_array($i, $addedLineNo)){
+            $v2.= '<tr class="table-success"><td>'.htmlspecialchars($line).'</td></tr>';
+          }else {
+            $v2.= '<tr class="table-light"><td>'.htmlspecialchars($line).'</td></tr>';
+          }
+        }
+        return array('file' => $file, 'v1' => $v1, 'v2' => $v2, 'addition' => COUNT($addedLineNo), 'deletion' => COUNT($deletedLineNo));
     }
 }
