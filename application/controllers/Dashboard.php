@@ -39,10 +39,7 @@ class Dashboard extends CI_Controller {
 
         $changed_files =  array();
         foreach ($fileswithdiff as $i => $file) {
-            $changed_files[] = $this->getFileDiff($file, $dir1, $dir2);
-            // if($i >0){
-            //     break;
-            // }
+          $changed_files[] = $this->getFileDiff($file, $dir1, $dir2);
         }
         $result  = array ('added' => $added_files , 'deleted' => $deleted_files, 'changed' =>$changed_files );
         echo json_encode($result);
@@ -81,13 +78,67 @@ class Dashboard extends CI_Controller {
     {
         $file_v1 = file($dir1.'/'.$file, FILE_IGNORE_NEW_LINES);
         $file_v2 = file($dir2.'/'.$file, FILE_IGNORE_NEW_LINES);
-        $addedDiff = array_diff($file_v2,$file_v1);
-        $deletedDiff = array_diff($file_v1,$file_v2);
-        $addedLineNo = array_keys($addedDiff);
-        $deletedLineNo = array_keys($deletedDiff);
 
-        $v1 = '';
-        $v2 = '';
+        $start = 0;
+        $file_v1_len = count($file_v1)-1;
+        $file_v2_len = count($file_v2)-1;
+
+        /*
+        Implemented LCM without removing start and end same line which result in max timeout and max space issue
+        iterating the common lines in start and end of files for space and time complexity enhancement to implement LCM algorithm
+        */
+        while ($file_v1[$start] == $file_v2[$start] && ($start <= $file_v1_len && $start <= $file_v2_len) ){ //omitting same lines in start
+          $start++;
+        }
+        while ($file_v1[$file_v1_len] == $file_v2[$file_v2_len] && ($file_v1_len >= $start && $file_v2_len >= $start)){ //omitting same lines in end
+          $file_v1_len--;
+          $file_v2_len--;
+        }
+
+        $length1 = $file_v1_len-$start+1;
+        $length2 = $file_v2_len-$start+1;
+
+        /*
+          LCM algorithm for git diff finding
+          https://www.geeksforgeeks.org/longest-common-subsequence-dp-4/
+          https://blog.robertelder.org/diff-algorithm/
+        */
+        for ($i=0; $i<=$length1; $i++){
+            for ($j=0; $j<=$length2; $j++){
+                if($i==0 || $j==0){
+                    $LCM[$i][$j]=0;
+                }else if ($file_v1[$i+$start-1]  == $file_v2[$j+$start-1]){
+                    $LCM[$i][$j] = $LCM[$i-1][$j-1]+1;
+                }else{
+                    $LCM[$i][$j] = max( $LCM[$i-1][$j], $LCM[$i][$j - 1]);
+                }
+            }
+        }
+
+        $addedLineNo = array();
+        $deletedLineNo = array();
+
+        // iterate from last i,j to start to find the added and deleted index.
+        $i = $length1 + 1;
+        $j = $length2 + 1;
+
+        while ($i > 0 || $j > 0){
+            if ($i > 0 && $j > 0 && $file_v1[ $i+$start-1 ] == $file_v2[ $j+$start-1 ]){
+                // line not changed
+                $i--;
+                $j--;
+            }elseif ($j > 0 && $LCM[$i][$j] == $LCM[$i][$j - 1]){
+                // line added
+                $addedLineNo[] = $j + $start - 1;
+                $j--;
+            }else{
+                // line deleted
+                $deletedLineNo[] = $i + $start - 1;
+                $i--;
+            }
+        }
+
+        $v1=''; $v2='';
         foreach ($file_v1 as $i => $line) {
           if(in_array($i, $deletedLineNo)){
             $v1.= '<tr class="table-danger"><td>'.htmlspecialchars($line).'</td></tr>';
@@ -104,4 +155,5 @@ class Dashboard extends CI_Controller {
         }
         return array('file' => $file, 'v1' => $v1, 'v2' => $v2, 'addition' => COUNT($addedLineNo), 'deletion' => COUNT($deletedLineNo));
     }
+
 }
