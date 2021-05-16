@@ -27,5 +27,13 @@ go to the file in the browser [http://localhost/codeigniter-diff/dashbaord](http
 ## Demo
 Demo Link : [https://astra-task.herokuapp.com/](https://astra-task.herokuapp.com/)
 
+## Dashbaord Files
+
+Controller: **/application/controllers/Dashboard.php**
+
+View      : **/application/views/dashboard.php**
+
+JS        : **/assets/js/dashboard.js**
+
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
